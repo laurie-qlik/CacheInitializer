@@ -24,10 +24,6 @@ namespace CacheInitializer
           HelpText = "Virtual Proxy to use")]
         public string virtualProxy { get; set; }
 
-        [Option('o', "objects", Required = false, DefaultValue = false,
-         HelpText = "cycle through all sheets and objects")]
-        public bool fetchobjects { get; set; }
-
         [Option('i', "index", Required = false, DefaultValue = false,
             HelpText = "creates the smart search index")]
         public bool createsearchindex { get; set; }

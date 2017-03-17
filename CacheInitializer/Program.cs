@@ -34,7 +34,6 @@ namespace CacheInitializer
             Options options = new Options();
             Uri serverURL;
             string appname;
-            bool openSheets;
             string virtualProxy;
 
             //// process the parameters using the https://commandline.codeplex.com/           
@@ -43,7 +42,6 @@ namespace CacheInitializer
                 serverURL = new Uri(options.server);
                 appname = options.appname;
                 virtualProxy = !string.IsNullOrEmpty(options.virtualProxy) ? options.virtualProxy : "" ;
-                openSheets = options.fetchobjects;
                 //TODO need to validate the params ideally
             }
             else
@@ -71,13 +69,13 @@ namespace CacheInitializer
                 //Open up and cache one app
                 IAppIdentifier appidentifier = remoteQlikSenseLocation.AppWithNameOrDefault(appname);
 
-                LoadCache(remoteQlikSenseLocation, appidentifier, openSheets, createSearchIndex);
+                LoadCache(remoteQlikSenseLocation, appidentifier, createSearchIndex);
             }
             else
             {
                 //Get all apps, open them up and cache them
                 remoteQlikSenseLocation.GetAppIdentifiers().ToList().ForEach(id => LoadCache(
-                    remoteQlikSenseLocation, id, openSheets, createSearchIndex));
+                    remoteQlikSenseLocation, id, createSearchIndex));
             }
 
             ////Wrap it up
@@ -88,23 +86,12 @@ namespace CacheInitializer
         }
 
         static void LoadCache(ILocation location, IAppIdentifier id,
-                              bool opensheets,
                               bool createSearchIndex)
         {
             //open up the app
             Print("{0}: Opening app", id.AppName);
             IApp app = location.App(id);
             Print("{0}: App open", id.AppName);
-
-            //see if we are going to open the sheets too
-            if (opensheets)
-            {
-                    //clear any selections
-                    Print("{0}: Clearing Selections", id.AppName);
-                    app.ClearAll(true);
-                    //cache the results
-                    cacheObjects(app, location, id);
-            }
 
             if (createSearchIndex)
             {
@@ -122,27 +109,6 @@ namespace CacheInitializer
             searchTerms.Add("mydummysearch");
             app.SearchSuggest(new SearchCombinationOptions(), searchTerms);
             Print("{0}: Search indexing completed");
-        }
-
-        static void cacheObjects(IApp app, ILocation location, IAppIdentifier id)
-        {
-            //get a list of the sheets in the app
-            Print("{0}: Getting sheets", id.AppName);
-            var sheets = app.GetSheets().ToArray();
-            //get a list of the objects in the app
-            Print("{0}: Number of sheets - {1}, getting children", id.AppName, sheets.Count());
-            IGenericObject[] allObjects = sheets.Concat(sheets.SelectMany(sheet => GetAllChildren(app, sheet))).ToArray();
-            //draw the layout of all objects so the server calculates the data for them
-            Print("{0}: Number of objects - {1}, caching all objects", id.AppName, allObjects.Count());
-            var allLayoutTasks = allObjects.Select(o => o.GetLayoutAsync()).ToArray();
-            Task.WaitAll(allLayoutTasks);
-            Print("{0}: Objects cached", id.AppName);
-        }
-
-        private static IEnumerable<IGenericObject> GetAllChildren(IApp app, IGenericObject obj)
-        {
-            IEnumerable<IGenericObject> children = obj.GetChildInfos().Select(o => app.GetObject<GenericObject>(o.Id)).ToArray();
-            return children.Concat(children.SelectMany(child => GetAllChildren(app, child)));
         }
 
         private static void Print(string txt)
