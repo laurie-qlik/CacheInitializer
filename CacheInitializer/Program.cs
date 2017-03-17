@@ -67,9 +67,8 @@ namespace CacheInitializer
             {
                 remoteQlikSenseLocation.VirtualProxyPath = virtualProxy;
             }
-            bool isHTTPs = false;
-            if (serverURL.Scheme == Uri.UriSchemeHttps) isHTTPs = true;
-            remoteQlikSenseLocation.AsNtlmUserViaProxy(isHTTPs,null,false);
+            bool isHTTPs = (serverURL.Scheme == Uri.UriSchemeHttps);
+            remoteQlikSenseLocation.AsNtlmUserViaProxy(isHTTPs);
 
 
             ////Start to cache the apps
