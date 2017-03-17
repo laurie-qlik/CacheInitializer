@@ -20,13 +20,9 @@ namespace CacheInitializer
           HelpText = "App to load")]
         public string appname { get; set; }
 
-        [Option('p', "appname", Required = false,
+        [Option('p', "proxy", Required = false,
           HelpText = "Virtual Proxy to use")]
         public string virtualProxy { get; set; }
-
-        [Option('i', "index", Required = false, DefaultValue = false,
-            HelpText = "creates the smart search index")]
-        public bool createsearchindex { get; set; }
 
         [ParserState]
         public IParserState LastParserState { get; set; }

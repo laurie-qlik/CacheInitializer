@@ -60,7 +60,6 @@ namespace CacheInitializer
             }
             bool isHTTPs = (serverURL.Scheme == Uri.UriSchemeHttps);
             remoteQlikSenseLocation.AsNtlmUserViaProxy(isHTTPs);
-            bool createSearchIndex = options.createsearchindex;
 
 
             ////Start to cache the apps
@@ -69,13 +68,13 @@ namespace CacheInitializer
                 //Open up and cache one app
                 IAppIdentifier appidentifier = remoteQlikSenseLocation.AppWithNameOrDefault(appname);
 
-                LoadCache(remoteQlikSenseLocation, appidentifier, createSearchIndex);
+                LoadCache(remoteQlikSenseLocation, appidentifier);
             }
             else
             {
                 //Get all apps, open them up and cache them
                 remoteQlikSenseLocation.GetAppIdentifiers().ToList().ForEach(id => LoadCache(
-                    remoteQlikSenseLocation, id, createSearchIndex));
+                    remoteQlikSenseLocation, id));
             }
 
             ////Wrap it up
@@ -85,19 +84,13 @@ namespace CacheInitializer
 
         }
 
-        static void LoadCache(ILocation location, IAppIdentifier id,
-                              bool createSearchIndex)
+        static void LoadCache(ILocation location, IAppIdentifier id)
         {
             //open up the app
             Print("{0}: Opening app", id.AppName);
             IApp app = location.App(id);
             Print("{0}: App open", id.AppName);
-
-            if (createSearchIndex)
-            {
-                cacheSearchIndex(app);
-            }
-
+            cacheSearchIndex(app);
             Print("{0}: App cache completed", id.AppName);
 
         }
