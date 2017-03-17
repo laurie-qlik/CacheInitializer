@@ -36,6 +36,10 @@ namespace CacheInitializer
          HelpText = "values to select e.g  \"France\",\"Germany\",\"Spain\"")]
         public string selectionvalues { get; set; }
 
+        [Option('i', "index", Required = false, DefaultValue = false,
+            HelpText = "creates the smart search index")]
+        public bool createsearchindex { get; set; }
+
         [ParserState]
         public IParserState LastParserState { get; set; }
 

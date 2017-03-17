@@ -69,6 +69,7 @@ namespace CacheInitializer
             }
             bool isHTTPs = (serverURL.Scheme == Uri.UriSchemeHttps);
             remoteQlikSenseLocation.AsNtlmUserViaProxy(isHTTPs);
+            bool createSearchIndex = options.createsearchindex;
 
 
             ////Start to cache the apps
@@ -77,12 +78,13 @@ namespace CacheInitializer
                 //Open up and cache one app
                 IAppIdentifier appidentifier = remoteQlikSenseLocation.AppWithNameOrDefault(appname);
 
-                LoadCache(remoteQlikSenseLocation, appidentifier, openSheets, mySelection);
+                LoadCache(remoteQlikSenseLocation, appidentifier, openSheets, mySelection, createSearchIndex);
             }
             else
             {
                 //Get all apps, open them up and cache them
-                remoteQlikSenseLocation.GetAppIdentifiers().ToList().ForEach(id => LoadCache(remoteQlikSenseLocation, id, openSheets, null));
+                remoteQlikSenseLocation.GetAppIdentifiers().ToList().ForEach(id => LoadCache(
+                    remoteQlikSenseLocation, id, openSheets, null, createSearchIndex));
             }
 
             ////Wrap it up
@@ -92,7 +94,9 @@ namespace CacheInitializer
 
         }
 
-        static void LoadCache(ILocation location, IAppIdentifier id, bool opensheets, QlikSelection Selections)
+        static void LoadCache(ILocation location, IAppIdentifier id,
+                              bool opensheets, QlikSelection Selections,
+                              bool createSearchIndex)
         {
             //open up the app
             Print("{0}: Opening app", id.AppName);
@@ -128,8 +132,22 @@ namespace CacheInitializer
                 }
             }
 
+            if (createSearchIndex)
+            {
+                cacheSearchIndex(app);
+            }
+
             Print("{0}: App cache completed", id.AppName);
 
+        }
+
+        static void cacheSearchIndex(IApp app)
+        {
+            Print("{0}: Search indexing started");
+            List<string> searchTerms = new List<string>();
+            searchTerms.Add("mydummysearch");
+            app.SearchSuggest(new SearchCombinationOptions(), searchTerms);
+            Print("{0}: Search indexing completed");
         }
 
         static void cacheObjects(IApp app, ILocation location, IAppIdentifier id)
