@@ -12,7 +12,7 @@ using Qlik.Sense.Client;
 // Author:      Joe Bickley,Roland Vecera
 // Summary:     This tool will "warm" the cache of a Qlik Sense server so that when using large apps the users get good performance right away.  
 //              You can use it to load all apps, a single app, and you can get it to just open the app to RAM or cycle through all the objects 
-//              so that it will pre calculate expressions so users get rapid performance. You can also pass in selections too.
+//              so that it will pre calculate expressions so users get rapid performance.
 // Credits:     Thanks to Øystein Kolsrud for helping with the Qlik Sense .net SDK steps
 //              Uses the commandline.codeplex.com for processing parameters
 
@@ -36,7 +36,6 @@ namespace CacheInitializer
             string appname;
             bool openSheets;
             string virtualProxy;
-            QlikSelection mySelection = null;
 
             //// process the parameters using the https://commandline.codeplex.com/           
             if (CommandLine.Parser.Default.ParseArguments(args, options))
@@ -45,12 +44,6 @@ namespace CacheInitializer
                 appname = options.appname;
                 virtualProxy = !string.IsNullOrEmpty(options.virtualProxy) ? options.virtualProxy : "" ;
                 openSheets = options.fetchobjects;
-                if (options.selectionfield != null)
-                {
-                    mySelection = new QlikSelection();
-                    mySelection.fieldname = options.selectionfield;
-                    mySelection.fieldvalues = options.selectionvalues.Split(',');
-                }
                 //TODO need to validate the params ideally
             }
             else
@@ -78,13 +71,13 @@ namespace CacheInitializer
                 //Open up and cache one app
                 IAppIdentifier appidentifier = remoteQlikSenseLocation.AppWithNameOrDefault(appname);
 
-                LoadCache(remoteQlikSenseLocation, appidentifier, openSheets, mySelection, createSearchIndex);
+                LoadCache(remoteQlikSenseLocation, appidentifier, openSheets, createSearchIndex);
             }
             else
             {
                 //Get all apps, open them up and cache them
                 remoteQlikSenseLocation.GetAppIdentifiers().ToList().ForEach(id => LoadCache(
-                    remoteQlikSenseLocation, id, openSheets, null, createSearchIndex));
+                    remoteQlikSenseLocation, id, openSheets, createSearchIndex));
             }
 
             ////Wrap it up
@@ -95,7 +88,7 @@ namespace CacheInitializer
         }
 
         static void LoadCache(ILocation location, IAppIdentifier id,
-                              bool opensheets, QlikSelection Selections,
+                              bool opensheets,
                               bool createSearchIndex)
         {
             //open up the app
@@ -106,30 +99,11 @@ namespace CacheInitializer
             //see if we are going to open the sheets too
             if (opensheets)
             {
-                //see of we are going to make some selections too
-                if (Selections != null)
-                {
-                    for (int i = 0; i < Selections.fieldvalues.Length; i++)
-                    {
-                        //clear any existing selections
-                        Print("{0}: Clearing Selections", id.AppName);
-                        app.ClearAll(true);
-                        //apply the new selections
-                        Print("{0}: Applying Selection: {1} = {2}", id.AppName, Selections.fieldname, Selections.fieldvalues[i]);
-                        app.GetField(Selections.fieldname).Select(Selections.fieldvalues[i]);
-                        //cache the results
-                        cacheObjects(app, location, id);
-                    }
-
-                }
-                else
-                {
                     //clear any selections
                     Print("{0}: Clearing Selections", id.AppName);
                     app.ClearAll(true);
                     //cache the results
                     cacheObjects(app, location, id);
-                }
             }
 
             if (createSearchIndex)
@@ -180,14 +154,6 @@ namespace CacheInitializer
         {
             Print(String.Format(txt, os));
         }
-
-
-    }
-
-    class QlikSelection
-    {
-        public string fieldname { get; set; }
-        public string[] fieldvalues { get; set; }
     }
 
 }

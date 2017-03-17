@@ -28,14 +28,6 @@ namespace CacheInitializer
          HelpText = "cycle through all sheets and objects")]
         public bool fetchobjects { get; set; }
 
-        [Option('f', "field", Required = false,
-         HelpText = "field to make selections in e.g Region")]
-        public string selectionfield { get; set; }
-
-        [Option('v', "values", Required = false,
-         HelpText = "values to select e.g  \"France\",\"Germany\",\"Spain\"")]
-        public string selectionvalues { get; set; }
-
         [Option('i', "index", Required = false, DefaultValue = false,
             HelpText = "creates the smart search index")]
         public bool createsearchindex { get; set; }
